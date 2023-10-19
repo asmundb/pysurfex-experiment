@@ -3,29 +3,29 @@
   "xhug_surf": 0.2,
   "xhug_root": 0.2,
   "xhug_deep": 0.2,
-  "xtg_surf": 285.0,
-  "xtg_root": 288.0,
-  "xtg_deep": 292.0
+  "xtg_surf": 277.0,
+  "xtg_root": 280.0,
+  "xtg_deep": 275.0
  },
   "nam_prep_teb": {
-    "xti_bld":  285.0,
-    "xti_road": 285.0,
-    "xts_road": 285.0,
-    "xts_roof": 285.0,
-    "xts_wall":  285.0,
+    "xti_bld":  275.0,
+    "xti_road": 275.0,
+    "xts_road": 275.0,
+    "xts_roof": 275.0,
+    "xts_wall":  275.0,
     "xws_road":    0.0,
     "xws_roof":    0.0
   },
   "NAM_PREP_SEAFLUX": {
-    "XSST_UNIF": 280,
+    "XSST_UNIF": 275,
     "XSSS_UNIF": 35,
     "XSIC_UNIF": 2
   },
   "NAM_PREP_WATFLUX": {
-    "XTS_WATER_UNIF": 280
+    "XTS_WATER_UNIF": 275
   },
    "NAM_PREP_FLAKE": {
-    "XTS_UNIF": 280
+    "XTS_UNIF": 270
   },
   "NAM_PREP_SEAICE_SICE": {
     "XICE_TUNIF":  270,

@@ -277,6 +277,8 @@ class Platform:
             if isinstance(realization, str):
                 if realization == "":
                     realization = None
+                else:
+                    realization = int(realization)
             if realization is not None:
                 if int(realization) >= 0:
                     pattern = self.sub_value(pattern, "RRR", f"{realization:03d}")

@@ -229,8 +229,8 @@ class Gmted(AbstractTask):
         Returns:
             tuple: GMTED input files
         """
-        east = domain_properties["minlon"]
-        west = domain_properties["maxlon"]
+        west = domain_properties["minlon"]
+        east = domain_properties["maxlon"]
         south = domain_properties["minlat"]
         north = domain_properties["maxlat"]
 

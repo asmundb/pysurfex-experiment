@@ -232,12 +232,12 @@ class SurfexSuite:
                 if validtime < dtg:
                     if validtime + as_timedelta(f"PT{hours_ahead}H") <= dtg:
                         ahead_trigger = EcflowSuiteTrigger(tname)
-
+            #ahead_trigger = None
             if ahead_trigger is None:
                 triggers = EcflowSuiteTriggers([static_complete])
             else:
                 triggers = EcflowSuiteTriggers([static_complete, ahead_trigger])
-
+            
             prepare_cycle = EcflowSuiteTask(
                 "PrepareCycle",
                 dtg_node,
@@ -250,7 +250,8 @@ class SurfexSuite:
             prepare_cycle_complete = EcflowSuiteTrigger(prepare_cycle)
 
             triggers.add_triggers([EcflowSuiteTrigger(prepare_cycle)])
-
+            #triggers = EcflowSuiteTriggers([EcflowSuiteTrigger(prepare_cycle)])
+            
             cycle_input = EcflowSuiteFamily(
                 "CycleInput", dtg_node, ecf_files, triggers=triggers
             )
@@ -602,6 +603,57 @@ class SurfexSuite:
             triggers = EcflowSuiteTriggers(
                 [EcflowSuiteTrigger(cycle_input), EcflowSuiteTrigger(initialization)]
             )
+            ##### WROK HERE #####
+            ensmsel = config.get_value("forecast.ensmsel")
+            if len(ensmsel) > 0:
+                pert_forcing = config.get_value("eps.pert_forcing")
+                pert_state = config.get_value("eps.pert_state")
+                ens_prep = EcflowSuiteFamily("ensemble_prep", dtg_node, ecf_files, triggers=triggers)
+                if pert_forcing:
+                    create_noise = EcflowSuiteTask("createNoise", 
+                            ens_prep, 
+                            config, 
+                            task_settings, 
+                            ecf_files,
+                            triggers=triggers,
+                            input_template=template)
+                if config.get_value("assim.do_assim") == True and dtg.hour == 6:
+                    prep = EcflowSuiteTask("ExternalAssim", ens_prep, config, task_settings, ecf_files,triggers=triggers, input_template=template)
+                    
+                else:
+                    prep = EcflowSuiteTask("CycleFirstGuess", ens_prep, config, task_settings, ecf_files,triggers=triggers, input_template=template)
+                if pert_forcing:
+                    triggers = EcflowSuiteTriggers([EcflowSuiteTrigger(create_noise), EcflowSuiteTrigger(prep)])
+                else:
+                    triggers = EcflowSuiteTriggers([EcflowSuiteTrigger(prep)])
+
+                for m in ensmsel:
+                    logger.debug("prep member %s", m)
+                    name = "mbr_%03d" % m
+                    args = "pert=" + str(m) + ";name=" + name
+                    logger.debug("args: %s", args)
+                    variables = {"ARGS": args, "ENSMBR": int(m)}
+                    pert = EcflowSuiteFamily(name, ens_prep, ecf_files, variables=variables) 
+                    
+                    #if pert_forcing:
+                    EcflowSuiteTask("PerturbForcing", pert, config, task_settings, ecf_files,triggers=triggers, input_template=template)
+                    if dtg == dtgbeg: 
+                        prep = EcflowSuiteTask("Prep", pert, config, task_settings, ecf_files,input_template=template)
+                    else:
+                        if config.get_value("assim.do_assim") == True and dtg.hour == 6:
+                            pass
+                        else:
+                            prep = EcflowSuiteTask("CycleFirstGuess", pert, config, task_settings, ecf_files,triggers=triggers, input_template=template)
+                        #triggers = EcflowSuiteTriggers([EcflowSuiteTrigger(prep)])
+                    if pert_state:
+                        EcflowSuiteTask("PerturbState", pert, config, task_settings, ecf_files,triggers=triggers, input_template=template)
+
+                triggers = EcflowSuiteTriggers([EcflowSuiteTrigger(ens_prep)]) 
+
+
+
+
+            #####################
             prediction = EcflowSuiteFamily(
                 "Prediction", dtg_node, ecf_files, triggers=triggers
             )
@@ -615,7 +667,19 @@ class SurfexSuite:
                 ecf_files,
                 input_template=template,
             )
-            triggers = EcflowSuiteTriggers(EcflowSuiteTrigger(forecast))
+            #### WORK HERE ####
+            if len(ensmsel) > 0:
+                eps = EcflowSuiteFamily("EPS", prediction, ecf_files)
+                for m in ensmsel:
+                    logger.debug("member %s", m)
+                    name = "mbr_%03d" % m
+                    args = "pert=" + str(m) + ";name=" + name
+                    logger.debug("args: %s", args)
+                    variables = {"ARGS": args, "ENSMBR": str(m)}
+                    member = EcflowSuiteFamily(name, eps, ecf_files, variables=variables)
+                    EcflowSuiteTask("Forecast", member, config, task_settings, ecf_files, input_template=template)
+                triggers = EcflowSuiteTriggers([EcflowSuiteTrigger(forecast), EcflowSuiteTrigger(member)])
+            
             EcflowSuiteTask(
                 "LogProgress",
                 prediction,

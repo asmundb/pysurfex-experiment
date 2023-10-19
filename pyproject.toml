@@ -16,7 +16,7 @@ SubmitTask = "experiment.cli:run_submit_cmd_exp"
     requires = ["poetry-core >= 1.0.0"]
 
 [tool.poetry.dependencies]
-    python = "^3.8"
+    python = "^3.10"
     dateutils = "^0.6.12"
     fastjsonschema = "2.16.2"
     f90nml = "^1.4.3"
@@ -24,11 +24,15 @@ SubmitTask = "experiment.cli:run_submit_cmd_exp"
     numexpr = "^2.8.4"
     numpy = "^1.22.4"
     pandas = "^1.4.0"
-    pyproj = "^3.3.0"
+    pyproj = "^3.6.1"
     pyyaml = "^6.0"
     tomlkit = "^0.11.6"
+    cartopy = "^0.21"
+    shapely = "^1.8.0"
+    pyresample = "^1.27.1"
     troika = {git = "https://git.ecmwf.int/scm/ecsdk/troika.git", tag="0.1.8"}
     pysurfex = {git = "https://github.com/metno/pysurfex.git", develop = true}
+    sfcpert = {git = "git@github.com:asmundb/sfcpert.git", develop = true}
 
 [tool.poetry.group.dev.dependencies]
     jupyterlab = "^3.6.1"

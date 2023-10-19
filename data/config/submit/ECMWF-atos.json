@@ -57,7 +57,8 @@
     },
     "Forecast": {
        "BATCH": {
-          "WALLTIME": "#SBATCH --time=00:15:00"
+          "WALLTIME": "#SBATCH --time=00:15:00",
+          "MEMORY": "#SBATCH --mem=10G"
        },
        "ENV": {
           "MODULE": "print('My beautiful module')"
@@ -70,14 +71,20 @@
     },
     "Forcing":{
        "ENV":{
-        "epygram": "import sys; sys.path.insert(0, '/perm/hlam/apps/epygram/1.4.13/epygram'); sys.path.insert(0, '/perm/hlam/apps/epygram/1.4.13/site'); sys.path.insert(0, '/perm/hlam/apps/epygram/1.4.13')"
+        "EPYGRAM": "import sys; sys.path.insert(0, '/perm/hlam/apps/epygram/1.4.13/epygram'); sys.path.insert(0, '/perm/hlam/apps/epygram/1.4.13/site'); sys.path.insert(0, '/perm/hlam/apps/epygram/1.4.13')",
+        "ECCODES": "exec(open('/usr/local/apps/lmod/8.6.8/init/env_modules_python.py').read()); module('load', 'ecmwf-toolbox')"
       }
     },
     "ModifyForcing":{
        "ENV":{
         "epygram": "import sys; sys.path.insert(0, '/perm/hlam/apps/epygram/1.4.13/epygram'); sys.path.insert(0, '/perm/hlam/apps/epygram/1.4.13/site'); sys.path.insert(0, '/perm/hlam/apps/epygram/1.4.13')"
       }
+    },
+    "ExternalAssim": {
+      "BATCH": {
+         "WALLTIME": "#SBATCH --time=00:05:00",
+         "MEMORY": "#SBATCH --mem=15G"
+       }
     }
-
   }
 }

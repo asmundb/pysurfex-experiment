@@ -31,6 +31,17 @@
     "NLON": 750,
     "TSTEP": 60
   },
+  "AROME_ARCTIC_ML": {
+    "GSIZE": 2500.0,
+    "LAT0": 77.5,
+    "LATC": 67.7,
+    "LON0": -25.0,
+    "LONC": 21.5,
+    "NLAT": 450,
+    "NLON": 300,
+    "TSTEP": 60
+  },
+
   "AROME_ARCTIC_ACCESS": {
     "GSIZE": 2500.0,
     "LAT0": 77.5,

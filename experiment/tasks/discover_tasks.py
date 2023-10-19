@@ -82,7 +82,8 @@ def get_task(name, config, loglevel="INFO"):
     )
     if os.path.exists(plugin_namespace_location):
         logger.info("Using local plugin directory %s", plugin_namespace_location)
-        sys.path.insert(0, config.exp_dir)
+        sys.path.insert(0, config.get_value("system.exp_dir"))
+        print(plugin_namespace)
         import experiment_plugin_tasks as plugin_namespace  # noqa
 
     known_types = discover(tasks, AbstractTask, attrname="__type_name__")

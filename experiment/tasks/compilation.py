@@ -2,7 +2,7 @@
 import os
 import shutil
 
-import surfex
+import  surfex
 
 from ..tasks.tasks import AbstractTask
 
@@ -202,7 +202,7 @@ class CMakeBuild(AbstractTask):
         cmd = f"cmake {offline_source}/src {cmake_flags}"
         surfex.BatchJob(rte, wrapper=wrapper).run(cmd)
         # Build
-        cmd = f"cmake --build . -- -j{nproc} offline-pgd offline-prep offline-offline offline-soda"
+        cmd = f"cmake --build . -- -j{nproc} VERBOSE=1 offline-pgd offline-prep offline-offline offline-soda"
         surfex.BatchJob(rte, wrapper=wrapper).run(cmd)
 
         # Manual installation

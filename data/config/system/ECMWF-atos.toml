@@ -11,7 +11,7 @@ hosts = ["hpc-login"]
 # EXP is defined when an experiment is started by "Harmonie start ..."
 sfx_exp_data = "/scratch/@USER@/sfx_data/@EXP@"
 # directory for scripts, compiled objects, executables
-sfx_exp_lib = "/scratch/@USER@/sfx_data/@EXP@/lib@STREAM@"
+sfx_exp_lib = "/perm/@USER@/sfx_data/@EXP@/lib@STREAM@"
 joboutdir = "/perm/@USER@/sfx_data/"
 login_host = "hpc-login"
 hm_cs = "gfortran"
