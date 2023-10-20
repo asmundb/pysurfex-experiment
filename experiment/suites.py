@@ -699,7 +699,7 @@ class SurfexSuite:
             log_pp_trigger = None
             obs_extract = EcflowSuiteTask("ObsExtract", pp_fam, config, task_settings, ecf_files,input_template=template)
             if len(ensmsel) > 0:
-                eps = EcflowSuiteFamily("ens_pp", prediction, ecf_files)
+                eps = EcflowSuiteFamily("ens_pp", pp_fam, ecf_files)
                 for m in ensmsel:
                     logger.debug("member %s", m)
                     name = "mbr_%03d" % m
@@ -707,7 +707,7 @@ class SurfexSuite:
                     logger.debug("args: %s", args)
                     variables = {"ARGS": args, "ENSMBR": str(m)}
                     member = EcflowSuiteFamily(name, eps, ecf_files, variables=variables)
-                    obs_extract = EcflowSuiteTask("ObsExtract", member, config, task_settings, exf_files,input_template=template)
+                    obs_extract = EcflowSuiteTask("ObsExtract", member, config, task_settings, ecf_files,input_template=template)
                 triggers = EcflowSuiteTriggers([EcflowSuiteTrigger(obs_extract), EcflowSuiteTrigger(member)])
  
             if analysis is not None:
