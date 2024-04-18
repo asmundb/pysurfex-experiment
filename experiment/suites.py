@@ -96,7 +96,7 @@ class SurfexSuite:
             "ECF_EXTN": ".py",
             "ECF_FILES": ecf_files,
             "ECF_INCLUDE": ecf_include,
-            "ECF_TRIES": 1,
+            "ECF_TRIES": 5,
             "ECF_HOME": ecf_home,
             "ECF_KILL_CMD": ecf_kill_cmd,
             "ECF_JOB_CMD": ecf_job_cmd,
@@ -105,7 +105,7 @@ class SurfexSuite:
             "ECF_JOBOUT": ecf_jobout,
             "ECF_TIMEOUT": 20,
             "LOGLEVEL": loglevel,
-            "WRAPPER": "",
+            "WRAPPER": "mpiexec -np 2",
             "VAR_NAME": "",
             "CONFIG": str(config_file),
             "TROIKA": TroikaSettings(config).command,
@@ -605,9 +605,9 @@ class SurfexSuite:
             )
             ##### WROK HERE #####
             ensmsel = config.get_value("forecast.ensmsel")
+            pert_forcing = config.get_value("eps.pert_forcing")
+            pert_state = config.get_value("eps.pert_state")
             if len(ensmsel) > 0:
-                pert_forcing = config.get_value("eps.pert_forcing")
-                pert_state = config.get_value("eps.pert_state")
                 ens_prep = EcflowSuiteFamily("ensemble_prep", dtg_node, ecf_files, triggers=triggers)
                 if pert_forcing:
                     create_noise = EcflowSuiteTask("createNoise", 
@@ -617,7 +617,9 @@ class SurfexSuite:
                             ecf_files,
                             triggers=triggers,
                             input_template=template)
-                if config.get_value("assim.do_assim") == True and dtg.hour == 6:
+                da_this = False
+                if config.get_value("assim.do_assim") == True :  # and dtg.hour == 6:
+                    da_this = True
                     prep = EcflowSuiteTask("ExternalAssim", ens_prep, config, task_settings, ecf_files,triggers=triggers, input_template=template)
                     
                 else:
@@ -628,25 +630,24 @@ class SurfexSuite:
                     triggers = EcflowSuiteTriggers([EcflowSuiteTrigger(prep)])
 
                 for m in ensmsel:
-                    logger.debug("prep member %s", m)
-                    name = "mbr_%03d" % m
-                    args = "pert=" + str(m) + ";name=" + name
-                    logger.debug("args: %s", args)
-                    variables = {"ARGS": args, "ENSMBR": int(m)}
-                    pert = EcflowSuiteFamily(name, ens_prep, ecf_files, variables=variables) 
-                    
-                    #if pert_forcing:
-                    EcflowSuiteTask("PerturbForcing", pert, config, task_settings, ecf_files,triggers=triggers, input_template=template)
-                    if dtg == dtgbeg: 
-                        prep = EcflowSuiteTask("Prep", pert, config, task_settings, ecf_files,input_template=template)
-                    else:
-                        if config.get_value("assim.do_assim") == True and dtg.hour == 6:
-                            pass
+                    if pert_forcing or pert_state or not da_this:
+                        logger.debug("prep member %s", m)
+                        name = "mbr_%03d" % m
+                        args = "pert=" + str(m) + ";name=" + name
+                        logger.debug("args: %s", args)
+                        variables = {"ARGS": args, "ENSMBR": int(m)}
+                        pert = EcflowSuiteFamily(name, ens_prep, ecf_files, variables=variables) 
+                        
+                        if pert_forcing:
+                            EcflowSuiteTask("PerturbForcing", pert, config, task_settings, ecf_files,triggers=triggers, input_template=template)
+                        if dtg == dtgbeg: 
+                            prep = EcflowSuiteTask("Prep", pert, config, task_settings, ecf_files,input_template=template)
                         else:
-                            prep = EcflowSuiteTask("CycleFirstGuess", pert, config, task_settings, ecf_files,triggers=triggers, input_template=template)
-                        #triggers = EcflowSuiteTriggers([EcflowSuiteTrigger(prep)])
-                    if pert_state:
-                        EcflowSuiteTask("PerturbState", pert, config, task_settings, ecf_files,triggers=triggers, input_template=template)
+                            if not da_this:
+                                prep = EcflowSuiteTask("CycleFirstGuess", pert, config, task_settings, ecf_files,triggers=triggers, input_template=template)
+                                #triggers = EcflowSuiteTriggers([EcflowSuiteTrigger(prep)])
+                        if pert_state:
+                            EcflowSuiteTask("PerturbState", pert, config, task_settings, ecf_files,triggers=triggers, input_template=template)
 
                 triggers = EcflowSuiteTriggers([EcflowSuiteTrigger(ens_prep)]) 
 
@@ -698,6 +699,7 @@ class SurfexSuite:
 
             log_pp_trigger = None
             obs_extract = EcflowSuiteTask("ObsExtract", pp_fam, config, task_settings, ecf_files,input_template=template)
+
             if len(ensmsel) > 0:
                 eps = EcflowSuiteFamily("ens_pp", pp_fam, ecf_files)
                 for m in ensmsel:
@@ -708,8 +710,10 @@ class SurfexSuite:
                     variables = {"ARGS": args, "ENSMBR": str(m)}
                     member = EcflowSuiteFamily(name, eps, ecf_files, variables=variables)
                     obs_extract = EcflowSuiteTask("ObsExtract", member, config, task_settings, ecf_files,input_template=template)
-                triggers = EcflowSuiteTriggers([EcflowSuiteTrigger(obs_extract), EcflowSuiteTrigger(member)])
- 
+                    triggers = EcflowSuiteTriggers([EcflowSuiteTrigger(obs_extract), EcflowSuiteTrigger(member)])
+                    if config.get_value("general.arhive_ecfs"):
+                        archive_ecfs = EcflowSuiteTask("ArchiveECFS", member, config, task_settings, ecf_files,input_template=template)
+                        triggers = EcflowSuiteTriggers([EcflowSuiteTrigger(archive_ecfs), EcflowSuiteTrigger(member)])
             if analysis is not None:
                 qc2obsmon = EcflowSuiteTask(
                     "Qc2obsmon",
@@ -721,6 +725,9 @@ class SurfexSuite:
                 )
                 trigger = EcflowSuiteTrigger(qc2obsmon)
                 log_pp_trigger = EcflowSuiteTriggers(trigger)
+            if config.get_value("general.arhive_ecfs"):
+                archive_ecfs = EcflowSuiteTask("ArchiveECFS", pp_fam, config, task_settings, ecf_files,input_template=template)
+ 
 
             EcflowSuiteTask(
                 "LogProgressPP",

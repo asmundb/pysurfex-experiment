@@ -30,6 +30,7 @@ SubmitTask = "experiment.cli:run_submit_cmd_exp"
     cartopy = "^0.21"
     shapely = "^1.8.0"
     pyresample = "^1.27.1"
+    mpl_scatter_density = "^0.7"
     troika = {git = "https://git.ecmwf.int/scm/ecsdk/troika.git", tag="0.1.8"}
     pysurfex = {git = "git@github.com:asmundb/pysurfex.git", develop = true, rev="2b8c5d377fbc9ed638e870de88a4ec77be67f4b2"}
     sfcpert = {git = "git@github.com:asmundb/sfcpert.git", develop = true}
