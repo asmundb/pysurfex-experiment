@@ -55,20 +55,30 @@ class ExternalAssim(AbstractTask):
         first_guess_dir = self.platform.substitute(archive_dir, basetime=self.fg_dtg)
         ana_dir = self.platform.substitute(archive_dir, basetime=self.dtg)
  
-        diag_file = self.platform.substitute("SURFOUT.@YYYY@@MM_LL@@DD_LL@_@HH_LL@h00.nc",basetime=self.fg_dtg, validtime=self.dtg)
-
+        diag_file = self.platform.substitute("SURFOUT.@YYYY_LL@@MM_LL@@DD_LL@_@HH_LL@h00.nc",basetime=self.fg_dtg, validtime=self.dtg)
+        print("diag",diag_file)
         obpattern = self.config.get_value("assim.obpath")
-        obpattern = self.platform.substitute(obpattern, basetime=self.fg_dtg)
+        obpattern = self.platform.substitute(obpattern, basetime=self.dtg)
+        hofxpattern = self.config.get_value("assim.hofxpath")
+        print(hofxpattern)
+        hofxpattern = self.platform.substitute(hofxpattern, basetime=self.dtg - self.fcint, validtime=self.dtg)
         bgpattern = first_guess_dir + "@mbr@/" + "SURFOUT" + self.suffix
-        hofxpattern = first_guess_dir + "@mbr@/" + diag_file
         anpattern = ana_dir + "@mbr@/" + "ANALYSIS" + self.suffix
         cfg_file = self.platform.substitute(self.config.get_value("assim.config"))
         print(bgpattern)
         print(anpattern)
-        print(hofxpattern)
+        print("hofx",hofxpattern)
         print(obpattern)
         print(cfg_file)
-        run_enkf(cfg_file, bgpattern, obpattern, anpattern, hofxpattern, nens)
+        domain = {
+            "lon0": self.geo.xlon0,
+            "lat0": self.geo.xlat0,
+            "latc": self.geo.xlatcen,
+            "lonc": self.geo.xloncen,
+            "nx": self.geo.nimax,
+            "ny": self.geo.njmax,
+            "dx": self.geo.xdx}
+        run_enkf(cfg_file, bgpattern, obpattern, anpattern, hofxpattern, nens, domain, imp_r=20, vert_d=200, write_cv=True)
         
         for i in range(nens):
             fc_start_sfx = self.wrk + "%03d" % i + "/fc_start_sfx"
